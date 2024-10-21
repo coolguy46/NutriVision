@@ -313,26 +313,7 @@ const DailyProgress: React.FC = () => {
                 </div>
             )}
         </div>
-            <Dialog open={isWeightDialogOpen} onOpenChange={setIsWeightDialogOpen}>
-                <DialogContent className="dark:bg-gray-800">
-                    <DialogHeader>
-                        <DialogTitle className="dark:text-white">Log Your Weight</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleWeightSubmit}>
-                        <Input
-                            type="number"
-                            step="0.1"
-                            value={newWeight}
-                            onChange={(e) => setNewWeight(e.target.value)}
-                            placeholder="Enter your weight in kg"
-                            className="dark:bg-gray-700 dark:text-white"
-                        />
-                        <DialogFooter>
-                            <Button type="submit" className="dark:bg-blue-600 dark:text-white">Log Weight</Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
+            
         </>
     );
 };
