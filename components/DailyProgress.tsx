@@ -89,7 +89,7 @@ const CircularProgress: React.FC<CircularProgressProps> = ({ value, size = 120, 
 };
 
 const DailyProgress: React.FC = () => {
-    const { user } = useAuth();
+    const { user, saveTotalToFirestore } = useAuth();
     const [recommendations, setRecommendations] = useState<Recommendations | null>(null);
     const [total, setTotal] = useState({
         calories: 0,
@@ -151,7 +151,7 @@ const DailyProgress: React.FC = () => {
                         const lastResetTimestamp = data.lastResetTimestamp?.toDate() || new Date(0);
                         const now = new Date();
                         const hoursDiff = (now.getTime() - lastResetTimestamp.getTime()) / (1000 * 3600);
-                        console.log('hours until rest :' + hoursDiff)
+                        console.log('hours since last reset :' + hoursDiff)
                         if (hoursDiff >= 24) {
                             const newStreak = data.goalsCompleted ? (data.streak || 0) + 1 : 0;
                             await updateDoc(userDocRef, {
@@ -180,6 +180,7 @@ const DailyProgress: React.FC = () => {
                             await deleteDoc(doc.ref);
                                 }
                             setTotal({ calories: 0, fat: 0, carbs: 0, protein: 0 });
+                            saveTotalToFirestore({ calories: 0, fat: 0, carbs: 0, protein: 0 })
                             setGoalsCompleted(false);
                             setStreak(newStreak);
                         } else {
