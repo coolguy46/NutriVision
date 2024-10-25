@@ -6,12 +6,12 @@ import { doc, setDoc } from "firebase/firestore";
 
 // Your Firebase configuration object
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID,
+  apiKey: 'AIzaSyDRNdF2bfIMLL11egHLvb-fOeNZrUFDi80',
+  authDomain: 'nutrivision-37b5f.firebaseapp.com',
+  projectId: 'nutrivision-37b5f',
+  storageBucket: 'nutrivision-37b5f.appspot.com',
+  messagingSenderId: '94959546917',
+  appId: '1:94959546917:web:a8fa48e337e371d8f545cc',
 };
 console.log(firebaseConfig)
 // Initialize Firebase
