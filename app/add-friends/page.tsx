@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import '@/app/globals.css'
 import { DarkModeProvider, useDarkMode } from '@/components/DarkModeContext';
+import Layout from '@/components/layout1';
 
 const AddFriendsPage: React.FC = () => {
   const { user } = useAuth();
@@ -209,8 +210,9 @@ const AddFriendsPage: React.FC = () => {
   };
 
   return (
+    <Layout>
     <div className="container mx-auto p-4 space-y-8 mt-16 dark:text-white">
-      <HeaderMenu />
+      
       <h1 className="text-3xl font-bold dark:text-white">Add Friends</h1>
 
       <Tabs defaultValue="search" className="w-full">
@@ -313,6 +315,7 @@ const AddFriendsPage: React.FC = () => {
         </TabsContent>
       </Tabs>
     </div>
+    </Layout>
   );
 };
 const Goalspage: React.FC = () => {

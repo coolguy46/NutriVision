@@ -17,6 +17,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 import Darkmodebutton from "@/components/darkmodebutton"
+import Layout from '@/components/layout1';
 
 interface GOALS {
   calories: number;
@@ -176,8 +177,9 @@ const MealPlansPage: React.FC = () => {
   }
 
   return (
+    <Layout>
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-b from-blue-100 to-white'}`}>
-      <HeaderMenu />
+      
     <main className="min-h-screen bg-white p-4 dark:bg-gray-800">
       <div className="max-w-4xl mx-auto mt-16">
         <Card className="mb-8">
@@ -298,6 +300,7 @@ const MealPlansPage: React.FC = () => {
       </div>
     </main>
     </div>
+    </Layout>
   );
 };
 

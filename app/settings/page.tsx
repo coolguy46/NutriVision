@@ -7,6 +7,7 @@ import { auth, googleProvider } from '@/lib/firebaseConfig';
 import HeaderMenu from '@/components/HeaderMenu';
 import { signInWithPopup, linkWithPopup } from 'firebase/auth';
 import '@/app/globals.css';
+import Layout from '@/components/layout1';
 
 const SettingsPage: React.FC = () => {
   const { user, initialized } = useAuth();
@@ -86,8 +87,9 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
+    <Layout>
     <main className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      <HeaderMenu />
+      
       <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
         <h1 className="text-2xl font-bold mb-4">Settings</h1>
 
@@ -175,6 +177,7 @@ const SettingsPage: React.FC = () => {
         {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
       </div>
     </main>
+    </Layout>
   );
 };
 

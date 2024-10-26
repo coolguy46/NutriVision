@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import '@/app/globals.css';
 import Darkmodebutton from "@/components/darkmodebutton"
+import Layout from '@/components/layout1';
 
 interface Recommendations {
   calories: number;
@@ -144,9 +145,9 @@ const Goalscontent: React.FC = () => {
   }
 
   return (
-    
+    <Layout>
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-b from-blue-100 to-white'}`}>
-      <HeaderMenu />
+      
       <main className="container mx-auto px-4 py-8 mt-16">
         <div className="max-w-4xl mx-auto">
         
@@ -282,7 +283,7 @@ const Goalscontent: React.FC = () => {
         </div>
       </main>
     </div>
-
+    </Layout>
   );
 };
 

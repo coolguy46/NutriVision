@@ -13,7 +13,7 @@ import HeaderMenu from '@/components/HeaderMenu';
 import { db } from '@/lib/firebaseConfig';
 import DailyProgress from '@/components/DailyProgress';
 import '@/app/globals.css';
-import { ArrowLeft, Moon, Sun } from 'lucide-react';
+import { Apple, ArrowLeft, Clock, Moon, Sun, TrendingUp } from 'lucide-react';
 import Darkmodebutton from '@/components/darkmodebutton'
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -27,6 +27,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Upload } from 'lucide-react';
 import NutriVisionLoading from '@/components/NutriVisionLoading';
 import { DarkModeProvider, useDarkMode } from '@/components/DarkModeContext';
+import Layout from '@/components/layout1';
 
 
 
@@ -153,7 +154,7 @@ const HomeContent = () => {
       saveTotalToFirestore(total);
     }
   }, [total, initialized, user]);
-
+  
   function isFirebaseError(error: unknown): error is FirebaseError {
     return (error as FirebaseError).code !== undefined;
   }
@@ -459,181 +460,207 @@ const HomeContent = () => {
   }
 
   return (
-    <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
-      <div className="dark:bg-gray-900 dark:text-white min-h-screen">
-        <HeaderMenu />
-        <main className="pt-24 min-h-screen bg-gradient-to-b from-blue-100 to-white dark:from-gray-800 dark:to-gray-900 flex flex-col items-center justify-start p-4">
-          <div className="w-full text-center mb-8 relative">
-            
-            <Darkmodebutton />
-            <h1 className="text-3xl sm:text-5xl font-extrabold text-gray-800 dark:text-white mb-4 mt-8">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-500 to-gray-500 dark:from-gray-300 dark:to-gray-300">
-                NutriVision
-              </span>
-            </h1>
-            <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 font-light">
-              Visualize Your Nutrition Journey
-            </p>
-          </div>
-
-        <div className="max-w-7xl w-full space-y-8">
-          {/* Daily Progress */}
-          <Card className="shadow-lg dark:bg-gray-800">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold dark:text-white">Daily Progress</CardTitle>
-              <CardDescription className="dark:text-gray-300">Track your nutritional intake today</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DailyProgress />
-            </CardContent>
-          </Card>
-
-          {/* Past Analyses */}
-          <Card className="shadow-lg dark:bg-gray-800">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold dark:text-white">Past Analyses</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[300px] sm:h-[400px] pr-4">
-                {pastAnalyses.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {pastAnalyses.map((analysis) => (
-                      <Card key={analysis.id} className="shadow-sm hover:shadow-md transition-shadow duration-200 dark:bg-gray-700">
-                        <CardContent className="p-4">
-                          <div className="relative w-full pb-[75%] mb-2">
-                            <img 
-                              src={analysis.imageUrl} 
-                              alt={analysis.name} 
-                              className="absolute top-0 left-0 w-full h-full object-cover rounded-lg"
-                            />
-                          </div>
-                          <h3 className="font-semibold text-lg mb-1 truncate dark:text-white" title={analysis.name}>{analysis.name}</h3>
-                          <div className="grid grid-cols-2 gap-1 text-xs text-gray-600 dark:text-gray-300 mb-2">
-                            <p>Calories: {analysis.calories} kcal</p>
-                            <p>Fat: {analysis.fat} g</p>
-                            <p>Carbs: {analysis.carbs} g</p>
-                            <p>Protein: {analysis.protein} g</p>
-                          </div>
-                          <div className="flex justify-between mt-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleViewAnalysis(analysis)}
-                              className="dark:bg-gray-600 dark:text-white"
-                            >
-                              View
-                            </Button>
-                            <Button 
-                              variant="destructive" 
-                              size="sm" 
-                              onClick={() => removeAnalysis(analysis)}
-                            >
-                              Remove
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-500 dark:text-gray-400">No past analyses available. Please upload a photo in the bottom right corner.</p>
-                )}
-              </ScrollArea>
-            </CardContent>
-          </Card>
-
-          {/* Today's Recommended Meals */}
-          <Card className="shadow-lg dark:bg-gray-800">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold dark:text-white">Todays Recommended Meals</CardTitle>
-              <CardDescription className="dark:text-gray-300">Based on your meal plan for today</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {Object.entries(recommendedMeals).map(([mealType, meal]) => (
-                  <Card key={mealType} className="dark:bg-gray-700">
-                    <CardHeader>
-                      <CardTitle className="text-lg font-semibold capitalize dark:text-white">{mealType}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {meal ? (
-                        <>
-                          <p className="font-medium dark:text-white">{meal.name}</p>
-                          <p className="dark:text-gray-300">Calories: {meal.calories} kcal</p>
-                          <p className="dark:text-gray-300">Amount: {meal.amount}</p>
-                          <div className="mt-2">
-                            <p className="font-medium dark:text-white">Macronutrients:</p>
-                            <p className="dark:text-gray-300">Protein: {meal.macronutrients.protein}g</p>
-                            <p className="dark:text-gray-300">Carbs: {meal.macronutrients.carbs}g</p>
-                            <p className="dark:text-gray-300">Fat: {meal.macronutrients.fat}g</p>
-                          </div>
-                        </>
-                      ) : (
-                        <p className="text-gray-500 dark:text-gray-400">No meal recommended</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
+    <Layout>
+      <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
+        <div className="dark:bg-gray-900 dark:text-white min-h-screen">
+          <main className="pt-16 min-h-screen bg-gradient-to-b from-blue-100 to-white dark:from-gray-800 dark:to-gray-900">
+            {/* Header Section */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center mb-8">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+                <Darkmodebutton />
               </div>
-            </CardContent>
-          </Card>
+
+              {/* Quick Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center">
+                      <TrendingUp className="w-8 h-8 mr-3" />
+                      <div>
+                        <p className="text-sm opacity-80">Daily Progress</p>
+                        <h3 className="text-2xl font-bold">{total.calories.toFixed(0)} kcal</h3>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center">
+                      <Apple className="w-8 h-8 mr-3" />
+                      <div>
+                        <p className="text-sm opacity-80">Meals Tracked</p>
+                        <h3 className="text-2xl font-bold">{pastAnalyses.length}</h3>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center">
+                      <Clock className="w-8 h-8 mr-3" />
+                      <div>
+                        <p className="text-sm opacity-80">Time Until Reset</p>
+                        <h3 className="text-2xl font-bold">24:00:00</h3>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Main Content Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Daily Progress Section */}
+                <Card className="shadow-lg dark:bg-gray-800">
+                  <CardHeader className="space-y-1">
+                    <CardTitle className="text-2xl">Nutrition Overview</CardTitle>
+                    <CardDescription>Your daily nutritional breakdown</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <DailyProgress />
+                  </CardContent>
+                </Card>
+
+                {/* Recommended Meals Section */}
+                <Card className="shadow-lg dark:bg-gray-800">
+                  <CardHeader className="space-y-1">
+                    <CardTitle className="text-2xl">Today's Meal Plan</CardTitle>
+                    <CardDescription>Recommended meals for today</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {Object.entries(recommendedMeals).map(([mealType, meal]) => (
+                        <div key={mealType} className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700">
+                          <h3 className="text-lg font-semibold capitalize mb-2">{mealType}</h3>
+                          {meal ? (
+                            <div className="space-y-2">
+                              <p className="font-medium">{meal.name}</p>
+                              <div className="grid grid-cols-2 gap-2 text-sm">
+                                <p>Calories: {meal.calories} kcal</p>
+                                <p>Amount: {meal.amount}</p>
+                                <p>Protein: {meal.macronutrients.protein}g</p>
+                                <p>Carbs: {meal.macronutrients.carbs}g</p>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-gray-500">No meal recommended</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Food Log Section - Full Width */}
+                <Card className="shadow-lg dark:bg-gray-800 lg:col-span-2">
+                  <CardHeader className="space-y-1">
+                    <CardTitle className="text-2xl">Food Log</CardTitle>
+                    <CardDescription>Recent meal tracking history</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ScrollArea className="h-[400px]">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {pastAnalyses.map((analysis) => (
+                          <div key={analysis.id} 
+                               className="group relative rounded-lg overflow-hidden bg-white dark:bg-gray-700 shadow-sm hover:shadow-md transition-all">
+                            <div className="aspect-w-16 aspect-h-9">
+                              <img 
+                                src={analysis.imageUrl} 
+                                alt={analysis.name} 
+                                className="object-cover w-full h-full"
+                              />
+                            </div>
+                            <div className="p-4">
+                              <h3 className="font-semibold truncate">{analysis.name}</h3>
+                              <p className="text-sm text-gray-600 dark:text-gray-300">
+                                {analysis.calories} kcal
+                              </p>
+                              <div className="mt-3 flex space-x-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => handleViewAnalysis(analysis)}
+                                  className="flex-1"
+                                >
+                                  View
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="destructive" 
+                                  onClick={() => removeAnalysis(analysis)}
+                                  className="flex-1"
+                                >
+                                  Remove
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </main>
+
+          {/* Upload Button and Dialog */}
+          <button
+            onClick={openCamera}
+            className="fixed bottom-6 right-6 p-4 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 transition-colors duration-200 dark:bg-blue-600 dark:hover:bg-blue-700"
+          >
+            <Upload className="w-6 h-6 text-white" />
+          </button>
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            onChange={handleFileChange}
+            accept="image/*"
+          />
+
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent className="sm:max-w-[425px] dark:bg-gray-800">
+              <div className="relative w-full h-64">
+                <img 
+                  src={selectedAnalysis?.imageUrl || tempImageUrl || '/placeholder-image.jpg'} 
+                  alt={selectedAnalysis?.name || 'Food analysis'} 
+                  className="w-full h-full object-cover rounded-t-lg"
+                />
+                <Button 
+                  className="absolute top-4 left-4 bg-white/80 hover:bg-white/90 text-black rounded-full p-2"
+                  onClick={() => setIsDialogOpen(false)}
+                >
+                  <ArrowLeft className="w-6 h-6" />
+                </Button>
+              </div>
+              <div className="p-6">
+                <h2 className="text-2xl font-bold mb-4">
+                  {selectedAnalysis?.name || 'Analysis Results'}
+                </h2>
+                {currentAnalysis && (
+                  <ResultsDisplay 
+                    foodData={currentAnalysis} 
+                    setAnalysisResult={(result) => {
+                      if (result.id) {
+                        updateAnalysis(result);
+                      } else {
+                        addNewAnalysis(result);
+                      }
+                      setIsDialogOpen(false);
+                    }}
+                    onClose={() => setIsDialogOpen(false)}
+                  />
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
-      </main>
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-  <DialogContent className="sm:max-w-[425px] w-[95vw] max-h-[90vh] overflow-y-auto p-0 dark:bg-gray-800">
-    <div className="relative w-full h-64">
-      <img 
-        src={selectedAnalysis?.imageUrl || tempImageUrl || '/placeholder-image.jpg'} 
-        alt={selectedAnalysis?.name || 'Food analysis'} 
-        className="w-full h-full object-cover"
-      />
-      <Button 
-        className="absolute top-4 left-4 bg-white/80 hover:bg-white/90 text-black rounded-full p-2 dark:bg-gray-800/80 dark:hover:bg-gray-800/90 dark:text-white"
-        onClick={() => setIsDialogOpen(false)}
-      >
-        <ArrowLeft className="w-6 h-6" />
-      </Button>
-    </div>
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4 dark:text-white">
-        {selectedAnalysis?.name || 'Analysis Results'}
-      </h2>
-      {currentAnalysis && (
-        <ResultsDisplay 
-          foodData={currentAnalysis} 
-          setAnalysisResult={(result) => {
-            if (result.id) {
-              updateAnalysis(result);
-            } else {
-              addNewAnalysis(result);
-            }
-            setIsDialogOpen(false);
-          }}
-          onClose={() => setIsDialogOpen(false)}
-        />
-      )}
-    </div>
-  </DialogContent>
-</Dialog>
-      <button
-        onClick={openCamera}
-        className="fixed bottom-4 right-4 p-4 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
-      >
-        <Upload className="w-6 h-6 text-white" />
-      </button>
-
-      <input
-        type="file"
-        ref={fileInputRef}
-        className="hidden"
-        onChange={handleFileChange}
-        accept="image/*"
-      />
-
-<Footer />
       </div>
-    </div>
+    </Layout>
   );
 };
 

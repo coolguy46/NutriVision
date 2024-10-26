@@ -9,6 +9,7 @@ import HeaderMenu from '@/components/HeaderMenu';
 import { useRouter } from 'next/navigation';
 import '@/app/globals.css';
 import { DarkModeProvider, useDarkMode } from '@/components/DarkModeContext';
+import Layout from '@/components/layout1';
 
 const CustomizeProfile: React.FC = () => {
   const { user, initialized } = useAuth();
@@ -96,8 +97,9 @@ const CustomizeProfile: React.FC = () => {
   };
 
   return (
+    <Layout>
     <main className="min-h-screen bg-gray-100 p-8">
-        <HeaderMenu />
+        
       <h1 className="text-3xl font-bold mb-4">Customize Your Profile</h1>
       <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg">
         <div className="mb-4">
@@ -135,6 +137,7 @@ const CustomizeProfile: React.FC = () => {
         </button>
       </div>
     </main>
+    </Layout>
   );
 };
 
