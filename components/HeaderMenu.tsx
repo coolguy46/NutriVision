@@ -13,35 +13,64 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { FaFire } from 'react-icons/fa';
-
-
+import { MenuIcon } from 'lucide-react';
 
 interface FriendData {
   email?: string;
   goalsCompleted?: boolean;
   uid: string;
   profilePicture?: string;
-  streak : number;
+  streak: number;
 }
-
-const HeaderMenu: React.FC = () => {
+interface HeaderMenuProps {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+}
+const HeaderMenu: React.FC<HeaderMenuProps> = ({ isOpen, setIsOpen }) => {
   const router = useRouter();
   const { user, signOutUser } = useAuth();
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
-  const [friendsFeed, setFriendsFeed] = useState<{ name: string; goalCompleted: boolean; uid: string; profilePicture: string; streak : number; }[]>([]);
+  const [friendsFeed, setFriendsFeed] = useState<{ name: string; goalCompleted: boolean; uid: string; profilePicture: string; streak: number; }[]>([]);
   const [isMobile, setIsMobile] = useState(false);
- 
+  
+  const [isNewUser, setIsNewUser] = useState(false);
+  const [showPointer, setShowPointer] = useState(false);
 
+ 
+  useEffect(() => {
+    const checkNewUser = async () => {
+      if (user) {
+        try {
+          const userDocRef = doc(db, 'users', user.uid, 'recommendations', 'daily');
+          const userDoc = await getDoc(userDocRef);
+          
+          if (userDoc.exists()) {
+            
+            setIsNewUser(false);
+          
+          } else {
+            setIsNewUser(true);
+            setTimeout(() => setShowPointer(true), 1000);
+          }
+        } catch (error) {
+          console.error('Error checking new user status:', error);
+        }
+      }
+    };
+
+    checkNewUser();
+  }, [user]);
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 1024);
+      const mobile = window.innerWidth < 1024;
+      setIsMobile(mobile);
+      setIsOpen(!mobile); // Auto-open on desktop
     };
 
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
+  }, [user, setIsOpen]);
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (user) {
@@ -111,159 +140,148 @@ const HeaderMenu: React.FC = () => {
     fetchFriendsFeed();
   }, [user]);
 
-  const navigateTo = (path: string) => {
-    router.push(path);
-  };
+  
+
 
   const menuItems = [
     { icon: HomeIcon, text: 'Home', path: '/' },
     { icon: UserIcon, text: 'Set Goals', path: '/goals' },
     { icon: CalendarIcon, text: 'Meal Plans', path: '/meals-plan' },
-    { icon: UserGroupIcon, text: 'Add Friends', path: '/add-friends' },
+    { icon: UserGroupIcon, text: 'Friends', path: '/add-friends' },
+    { icon: Cog6ToothIcon, text: 'Settings', path: '/settings' },
   ];
 
-  const MenuIcon: React.FC<{ icon: React.ElementType, className?: string }> = ({ icon: Icon, className }) => (
-    <Icon className={`h-5 w-5 ${className}`} />
-  );
+  const navigateTo = (path: string) => {
+    if (path === '/goals') setShowPointer(false);
+    router.push(path);
+    if (isMobile) setIsOpen(false);
+  };
 
-  const FriendsFeed: React.FC = () => (
-    <ScrollArea className="h-[300px] w-[250px]">
-      {friendsFeed.length > 0 ? (
-        friendsFeed.map((friend) => (
-          <div key={friend.uid} className="flex items-center p-2 hover:bg-gray-100">
-            <Avatar className="h-8 w-8 mr-2">
-              <AvatarImage src={friend.profilePicture} alt={friend.name} />
-              <AvatarFallback>{friend.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <TooltipProvider>
-            <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Badge variant="outline" className="flex items-center space-x-1">
-                                    <FaFire className="text-orange-500" />
-                                    <span>{friend.streak}</span>
-                                </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Daily streak: {friend.streak} days</p>
-                            </TooltipContent>
-                        </Tooltip>
-                        </TooltipProvider>
-            <div>
-              <p className="text-sm font-medium">{friend.name}</p>
-              <p className="text-xs text-gray-500">
-                {friend.goalCompleted ? 'Goal Completed' : 'In Progress'}
-              </p>
-            </div>
+  const GoalPointer = () => {
+    if (!showPointer) return null;
+    return (
+      <div className="absolute -right-4 top-1/2 -translate-y-1/2 animate-bounce pointer-events-none">
+        <div className="relative flex items-center">
+          <div className="bg-primary text-white px-3 py-1.5 rounded-lg shadow-lg text-sm whitespace-nowrap mr-2">
+            Start here! 🎯
           </div>
-          
-        ))
-      ) : (
-        <p className="text-sm text-gray-500 p-2">No friend updates</p>
-      )}
-    </ScrollArea>
-  );
+          <div className="w-2 h-2 bg-primary transform rotate-45" />
+        </div>
+      </div>
+    );
+  };
 
-  return (
-    <header className="fixed top-0 left-0 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50 border-b">
-      <div className="container mx-auto flex justify-between items-center h-16 px-4">
-        {/* Mobile menu */}
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="lg:hidden">
-              <MenuIcon icon={HomeIcon} className="h-6 w-6 dark:text-white" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-            <nav className="flex flex-col gap-4">
-              {menuItems.map((item, index) => (
-                <Button
-                  key={index}
-                  variant="ghost"
-                  className="w-full justify-start dark:text-white"
-                  onClick={() => navigateTo(item.path)}
-                >
-                  <MenuIcon icon={item.icon} className="mr-2 dark:text-white" />
-                  {item.text}
-                </Button>
-              ))}
-              <Separator />
-              <Button
-                variant="ghost"
-                className="w-full justify-start dark:text-white"
-                onClick={() => navigateTo('/settings')}
-              >
-                <MenuIcon icon={Cog6ToothIcon} className="mr-2" />
-                Settings
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start dark:text-white"
-                onClick={signOutUser}
-              >
-                <MenuIcon icon={ArrowRightOnRectangleIcon} className="mr-2" />
-                Sign Out
-              </Button>
-            </nav>
-          </SheetContent>
-        </Sheet>
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full">
+      {/* Profile Section */}
+      <div className="px-4 py-6 border-b">
+        <div className="flex items-center space-x-3">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={profilePicture || undefined} alt="Profile" />
+            <AvatarFallback>{user?.displayName?.charAt(0).toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <p className="text-sm font-medium">{user?.displayName || user?.email}</p>
+            <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+          </div>
+        </div>
+      </div>
 
-        {/* Desktop menu */}
-        <nav className="hidden lg:flex space-x-4">
-          {menuItems.map((item, index) => (
-            <Button
-              key={index}
-              variant="ghost"
-              className="flex items-center space-x-2"
-              onClick={() => navigateTo(item.path)}
-            >
-              <MenuIcon icon={item.icon} />
-              <span>{item.text}</span>
-            </Button>
+      {/* Navigation */}
+      <ScrollArea className="flex-1 px-3 py-4">
+        <nav className="space-y-2">
+          {menuItems.map((item) => (
+            <div key={item.path} className="relative">
+              <Button
+                className={`w-full justify-start ${isNewUser && item.path === '/goals' ? 'animate-pulse' : ''}`}
+                onClick={() => navigateTo(item.path)}
+              >
+                <item.icon className="h-5 w-5 mr-3" />
+                {item.text}
+              </Button>
+              {isNewUser && item.path === '/goals' && <GoalPointer />}
+            </div>
           ))}
         </nav>
 
-        {/* Right side menu items */}
-        <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hidden lg:flex"
-            onClick={() => navigateTo('/settings')}
-          >
-            <MenuIcon icon={Cog6ToothIcon} className="h-5 w-5" />
-          </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MenuIcon icon={UserGroupIcon} className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <FriendsFeed />
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={profilePicture || undefined} alt="Profile" />
-                  <AvatarFallback>{user?.displayName?.charAt(0).toUpperCase()}</AvatarFallback>
+        {/* Friends Feed */}
+        <div className="mt-6">
+          <h4 className="text-sm font-medium px-2 mb-2">Friends Activity</h4>
+          <div className="space-y-2">
+            {friendsFeed.map((friend) => (
+              <div key={friend.uid} className="flex items-center p-2 rounded-md hover:bg-accent">
+                <Avatar className="h-8 w-8 mr-2">
+                  <AvatarImage src={friend.profilePicture} alt={friend.name} />
+                  <AvatarFallback>{friend.name.charAt(0)}</AvatarFallback>
                 </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => navigateTo('/customize-profile')}>
-                Customize Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={signOutUser}>
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{friend.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {friend.goalCompleted ? 'Completed goals' : 'In progress'}
+                  </p>
+                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge variant="outline" className="ml-2 flex items-center space-x-1">
+                        <FaFire className="text-orange-500" />
+                        <span>{friend.streak}</span>
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Daily streak: {friend.streak} days</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            ))}
+          </div>
         </div>
+      </ScrollArea>
+
+      {/* Sign Out Button */}
+      <div className="border-t p-4">
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50"
+          onClick={signOutUser}
+        >
+          <ArrowRightOnRectangleIcon className="h-5 w-5 mr-3" />
+          Sign Out
+        </Button>
       </div>
-    </header>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Mobile Toggle Button */}
+      {isMobile && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="fixed top-4 left-4 z-50 lg:hidden"
+          onClick={() => setIsOpen(true)}
+        >
+          <MenuIcon className="h-6 w-6" /> {/* Make sure to import MenuIcon */}
+        </Button>
+      )}
+
+      {/* Sidebar */}
+      {isMobile ? (
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+          <SheetContent side="left" className="p-0 w-[300px]">
+            <SidebarContent />
+          </SheetContent>
+        </Sheet>
+      ) : (
+        <div className={`fixed inset-y-0 left-0 w-[300px] border-r bg-background transform transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}>
+          <SidebarContent />
+        </div>
+      )}
+</>
   );
 };
 
