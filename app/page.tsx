@@ -526,7 +526,7 @@ const HomeContent = () => {
                 {/* Recommended Meals Section */}
                 <Card className="shadow-lg dark:bg-gray-800">
                   <CardHeader className="space-y-1">
-                    <CardTitle className="text-2xl">Today's Meal Plan</CardTitle>
+                    <CardTitle className="text-2xl">Todays Meal Plan</CardTitle>
                     <CardDescription>Recommended meals for today</CardDescription>
                   </CardHeader>
                   <CardContent>
