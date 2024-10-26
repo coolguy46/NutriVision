@@ -468,7 +468,6 @@ const HomeContent = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex justify-between items-center mb-8">
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-                <Darkmodebutton />
               </div>
 
               {/* Quick Stats */}
@@ -502,7 +501,7 @@ const HomeContent = () => {
                     <div className="flex items-center">
                       <Clock className="w-8 h-8 mr-3" />
                       <div>
-                        <p className="text-sm opacity-80">Time Until Reset</p>
+                        <p className="text-sm opacity-80">Time Until Reset (Feature Not Implemented)</p>
                         <h3 className="text-2xl font-bold">24:00:00</h3>
                       </div>
                     </div>
