@@ -152,7 +152,7 @@ export default function SignIn() {
             )}
 
             <p className="text-center text-sm text-gray-600">
-              Don't have an account? 
+              Dont have an account? 
               <Button 
                 variant="link" 
                 className="text-blue-600 hover:text-blue-800 font-semibold"
