@@ -72,7 +72,7 @@ export default function SignIn() {
       </div>
       
       <div className="space-y-4">
-        <p className="text-xl font-medium">"Tracking nutrition has never been easier with AI-powered food recognition."</p>
+        <p className="text-xl font-medium">&ldquo;Tracking nutrition has never been easier with AI-powered food recognition.&rdquo;</p>
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-full bg-white/10"></div>
           <div>
@@ -181,7 +181,7 @@ export default function SignIn() {
           )}
 
           <p className="text-center text-sm text-gray-600">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Button 
               type="button"
               variant="link" 
