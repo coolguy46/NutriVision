@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { FcGoogle } from "react-icons/fc"
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import '@/app/globals.css'
 
 export default function SignIn() {
   const { user, signInWithGoogle, signInWithEmailPassword, sendPasswordResetEmail } = useAuth();
