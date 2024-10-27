@@ -254,6 +254,12 @@ const HeaderMenu: React.FC<HeaderMenuProps> = ({ isOpen, setIsOpen }) => {
   );
 
   return (
+    <div
+    className={`fixed inset-y-0 left-0 w-[300px] bg-background border-r transition-transform duration-300 ease-in-out ${
+      isOpen ? 'translate-x-0' : '-translate-x-full'
+    }`}
+  >
+  
     <>
       {/* Mobile Toggle Button */}
       {isMobile && (
@@ -282,6 +288,7 @@ const HeaderMenu: React.FC<HeaderMenuProps> = ({ isOpen, setIsOpen }) => {
         </div>
       )}
 </>
+</div>
   );
 };
 
