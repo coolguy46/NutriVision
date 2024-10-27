@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useEffect, ReactNode } from 'react';
-import HeaderMenu from './HeaderMenu';  // Adjust import path as needed
+import HeaderMenu from './HeaderMenu';
 
 type LayoutProps = {
   children: ReactNode;
@@ -23,13 +23,13 @@ const Layout = ({ children }: LayoutProps) => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex">
       <HeaderMenu 
         isOpen={isSidebarOpen} 
-        setIsOpen={(open: boolean) => setIsSidebarOpen(open)}
+        setIsOpen={setIsSidebarOpen}
       />
-      <main
-        className={`min-h-screen transition-all duration-300 ease-in-out ${
+      <main 
+        className={`flex-1 transition-all duration-300 ease-in-out ${
           !isMobile && isSidebarOpen ? 'lg:ml-[300px]' : 'lg:ml-0'
         }`}
       >
