@@ -53,11 +53,42 @@ export default function SignIn() {
     }
   };
 
+  const FeatureCard = () => (
+    <div className="max-w-md text-white space-y-8 w-full">
+      <div className="bg-blue-800/30 rounded-lg p-6">
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <span className="text-sm opacity-70">Daily Calories</span>
+            <span className="text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded">Active</span>
+          </div>
+          <div className="flex items-end gap-2">
+            <span className="text-4xl font-bold">1,850</span>
+            <span className="text-sm opacity-70 mb-1">kcal</span>
+          </div>
+          <div className="w-full bg-blue-700/30 rounded-full h-2">
+            <div className="bg-green-400 h-2 rounded-full" style={{ width: '70%' }}></div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="space-y-4">
+        <p className="text-xl font-medium">"Tracking nutrition has never been easier with AI-powered food recognition."</p>
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-full bg-white/10"></div>
+          <div>
+            <p className="font-medium">Sarah Johnson</p>
+            <p className="text-sm opacity-70">Nutrition Expert</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <main className="min-h-screen flex">
+    <main className="min-h-screen flex flex-col lg:flex-row">
       {/* Left Side - Login Form */}
-      <div className="w-1/2 p-8 flex items-center justify-center bg-white">
-        <div className="w-full max-w-md space-y-8">
+      <div className="w-full lg:w-1/2 p-4 sm:p-8 flex items-center justify-center bg-white">
+        <div className="w-full max-w-md space-y-6">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900">NutriVision</h1>
             <p className="mt-2 text-sm text-gray-600">Welcome back! Please enter your details</p>
@@ -65,7 +96,7 @@ export default function SignIn() {
 
           <Button 
             variant="outline" 
-            className="w-full flex items-center justify-center gap-2 py-6 border-2"
+            className="w-full flex items-center justify-center gap-2 py-4 sm:py-6 border-2"
             onClick={signInWithGoogle}
           >
             <FcGoogle className="h-5 w-5" />
@@ -81,26 +112,22 @@ export default function SignIn() {
             </div>
           </div>
 
-          <div className="space-y-6">
+          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSignIn(); }}>
             <div className="space-y-2">
-              <Label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
-              </Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full py-6"
+                className="w-full py-4 sm:py-6"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </Label>
+              <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -108,7 +135,7 @@ export default function SignIn() {
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full py-6"
+                  className="w-full py-4 sm:py-6"
                   required
                 />
                 <button
@@ -123,6 +150,7 @@ export default function SignIn() {
 
             <div className="flex items-center justify-end">
               <Button 
+                type="button"
                 variant="link" 
                 className="text-sm text-blue-600 hover:text-blue-800"
                 onClick={handleForgotPassword}
@@ -132,69 +160,43 @@ export default function SignIn() {
             </div>
 
             <Button 
-              className="w-full py-6 bg-blue-600 hover:bg-blue-700 text-white"
-              onClick={handleSignIn}
+              type="submit"
+              className="w-full py-4 sm:py-6 bg-blue-600 hover:bg-blue-700 text-white"
               disabled={loading}
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </Button>
+          </form>
 
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            
-            {resetEmailSent && (
-              <Alert>
-                <AlertDescription>Password reset email sent. Please check your inbox.</AlertDescription>
-              </Alert>
-            )}
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
+          {resetEmailSent && (
+            <Alert>
+              <AlertDescription>Password reset email sent. Please check your inbox.</AlertDescription>
+            </Alert>
+          )}
 
-            <p className="text-center text-sm text-gray-600">
-              Dont have an account? 
-              <Button 
-                variant="link" 
-                className="text-blue-600 hover:text-blue-800 font-semibold"
-                onClick={() => router.push('/signup')}
-              >
-                Sign up
-              </Button>
-            </p>
-          </div>
+          <p className="text-center text-sm text-gray-600">
+            Don't have an account?{' '}
+            <Button 
+              type="button"
+              variant="link" 
+              className="text-blue-600 hover:text-blue-800 font-semibold"
+              onClick={() => router.push('/signup')}
+            >
+              Sign up
+            </Button>
+          </p>
         </div>
       </div>
 
       {/* Right Side - Feature Highlight */}
-      <div className="w-1/2 bg-blue-900 p-8 flex items-center justify-center">
-        <div className="max-w-md text-white space-y-8">
-          <div className="bg-blue-800/30 rounded-lg p-6">
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-sm opacity-70">Daily Calories</span>
-                <span className="text-xs bg-green-500/20 text-green-300 px-2 py-1 rounded">Active</span>
-              </div>
-              <div className="flex items-end gap-2">
-                <span className="text-4xl font-bold">1,850</span>
-                <span className="text-sm opacity-70 mb-1">kcal</span>
-              </div>
-              <div className="w-full bg-blue-700/30 rounded-full h-2">
-                <div className="bg-green-400 h-2 rounded-full" style={{ width: '70%' }}></div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="space-y-4">
-            <p className="text-xl font-medium">Tracking nutrition has never been easier with AI-powered food recognition.</p>
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-white/10"></div>
-              <div>
-                <p className="font-medium">Sarah Johnson</p>
-                <p className="text-sm opacity-70">Nutrition Expert</p>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="w-full lg:w-1/2 bg-blue-900 p-4 sm:p-8 flex items-center justify-center">
+        <FeatureCard />
       </div>
     </main>
   );
