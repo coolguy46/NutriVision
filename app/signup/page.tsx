@@ -155,7 +155,7 @@ export default function SignUp() {
           </div>
           
           <div className="space-y-4">
-            <p className="text-xl font-medium">"Join thousands of users who have transformed their nutrition journey with NutriVision."</p>
+            <p className="text-xl font-medium">Join thousands of users who have transformed their nutrition journey with NutriVision.</p>
             <div className="flex items-center gap-3">
               
             </div>
