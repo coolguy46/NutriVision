@@ -9,13 +9,13 @@ import HeaderMenu from '@/components/HeaderMenu';
 import '@/app/globals.css';
 import { useDarkMode, DarkModeProvider } from '@/components/DarkModeContext';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
+import { AlertCircle, ChevronRight, Loader2, Utensils } from "lucide-react";
 import Darkmodebutton from "@/components/darkmodebutton"
 import Layout from '@/components/layout1';
 
@@ -178,132 +178,179 @@ const MealPlansPage: React.FC = () => {
 
   return (
     <Layout>
-    <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-b from-blue-100 to-white'}`}>
-      
-    <main className="min-h-screen bg-white p-4 dark:bg-gray-800">
-      <div className="max-w-4xl mx-auto mt-16">
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">Meal Plans Generator</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="cookingTime" className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">Cooking Time:</label>
-                <Select onValueChange={(value) => setCookingTime(value)} defaultValue={cookingTime}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select cooking time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="30 minutes">30 minutes</SelectItem>
-                    <SelectItem value="1 hour">1 hour</SelectItem>
-                    <SelectItem value="2 hours">2 hours</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label htmlFor="dietaryRestrictions" className="block text-sm font-medium text-gray-700 mb-1 dark:text-white">Dietary Restrictions:</label>
-                <Input
-                  id="dietaryRestrictions"
-                  value={dietaryRestrictions}
-                  onChange={(e) => setDietaryRestrictions(e.target.value)}
-                  placeholder="Enter any dietary restrictions"
-                />
-              </div>
-
-              <Button
-                onClick={handleGenerateClick}
-                className="w-full"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating Meal Plans
-                  </>
-                ) : (
-                  'Generate Meal Plans'
-                )}
-              </Button>
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+        <main className="container mx-auto px-4 py-8">
+          <div className="max-w-5xl mx-auto space-y-8">
+            {/* Header Section */}
+            <div className="text-center mb-12">
+              <h1 className="text-4xl font-bold mb-4 dark:text-white">Weekly Meal Planner</h1>
+              <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                Personalized meal plans tailored to your nutritional goals and preferences
+              </p>
             </div>
-          </CardContent>
-        </Card>
 
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+            {/* Goals Summary */}
+            {goals && (
+              <Card className="border-none shadow-lg bg-white dark:bg-gray-800">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-semibold dark:text-white">
+                    Daily Nutritional Goals
+                  </CardTitle>
+                  <CardDescription>Track your progress towards these targets</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-4 gap-6">
+                    {[
+                      { label: 'Calories', value: `${goals.calories} kcal`, color: 'bg-blue-100 dark:bg-blue-900' },
+                      { label: 'Protein', value: `${goals.protein}g`, color: 'bg-green-100 dark:bg-green-900' },
+                      { label: 'Carbs', value: `${goals.carbs}g`, color: 'bg-purple-100 dark:bg-purple-900' },
+                      { label: 'Fat', value: `${goals.fat}g`, color: 'bg-orange-100 dark:bg-orange-900' }
+                    ].map((item, index) => (
+                      <div key={index} className={`${item.color} rounded-xl p-6 text-center transition-transform hover:scale-105`}>
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">{item.label}</p>
+                        <p className="text-2xl font-bold mt-2 dark:text-white">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-        {goals && (
-          <Card className="mb-8">
-            <CardHeader>
-              <CardTitle className="text-xl font-semibold dark:text-white">Your Current Goals</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="font-medium dark:text-white">Calories:</p>
-                  <p>{goals.calories} kcal</p>
-                </div>
-                <div>
-                  <p className="font-medium dark:text-white">Protein:</p>
-                  <p>{goals.protein} g</p>
-                </div>
-                <div>
-                  <p className="font-medium dark:text-white">Carbs:</p>
-                  <p>{goals.carbs} g</p>
-                </div>
-                <div>
-                  <p className="font-medium dark:text-white">Fat:</p>
-                  <p>{goals.fat} g</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+            {/* Generator Controls */}
+            <Card className="border-none shadow-lg bg-white dark:bg-gray-800">
+              <CardHeader>
+                <CardTitle className="text-2xl font-semibold flex items-center gap-2 dark:text-white">
+                  <Utensils className="h-6 w-6" />
+                  Meal Plan Generator
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Cooking Time Preference
+                    </label>
+                    <Select onValueChange={(value) => setCookingTime(value)} defaultValue={cookingTime}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select cooking time" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="30 minutes">30 minutes</SelectItem>
+                        <SelectItem value="1 hour">1 hour</SelectItem>
+                        <SelectItem value="2 hours">2 hours</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-        {mealPlans && (
-          <Accordion type="single" collapsible className="space-y-4">
-            {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
-              mealPlans[day] && (
-                <AccordionItem value={day} key={day}>
-                  <AccordionTrigger className="text-lg font-semibold dark:text-white">{day}</AccordionTrigger>
-                  <AccordionContent>
-                    <div className="space-y-4">
-                      {Object.entries(mealPlans[day]).map(([mealType, meal], index) => (
-                        <Card key={index}>
-                          <CardHeader>
-                            <CardTitle className="text-md font-semibold dark:text-white">{mealType.charAt(0).toUpperCase() + mealType.slice(1)}</CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="font-medium dark:text-white">{meal.name}</p>
-                            <p>Calories: {meal.calories} kcal</p>
-                            <p>Amount: {meal.amount}</p>
-                            <div className="mt-2">
-                              <p className="font-medium dark:text-white">Macronutrients:</p>
-                              <p>Protein: {meal.macronutrients.protein}g</p>
-                              <p>Carbs: {meal.macronutrients.carbs}g</p>
-                              <p>Fat: {meal.macronutrients.fat}g</p>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Dietary Restrictions
+                    </label>
+                    <Input
+                      value={dietaryRestrictions}
+                      onChange={(e) => setDietaryRestrictions(e.target.value)}
+                      placeholder="e.g., vegetarian, gluten-free"
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleGenerateClick}
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-6"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Generating Your Personalized Meal Plan
+                    </>
+                  ) : (
+                    <>
+                      Generate Weekly Meal Plan
+                      <ChevronRight className="ml-2 h-5 w-5" />
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Error Alert */}
+            {error && (
+              <Alert variant="destructive" className="border-red-200 bg-red-50 dark:bg-red-900/20">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="ml-2">{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {/* Meal Plans */}
+            {mealPlans && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold dark:text-white">Your Weekly Meal Plan</h2>
+                <Accordion type="single" collapsible className="space-y-4">
+                  {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+                    mealPlans[day] && (
+                      <AccordionItem
+                        value={day}
+                        key={day}
+                        className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
+                      >
+                        <AccordionTrigger className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                          <div className="flex items-center gap-4">
+                            <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                              <span className="text-blue-600 dark:text-blue-300 font-semibold">
+                                {day.charAt(0)}
+                              </span>
                             </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              )
-            ))}
-          </Accordion>
-        )}
+                            <span className="text-lg font-semibold dark:text-white">{day}</span>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-6 py-4">
+                          <div className="grid gap-6">
+                            {Object.entries(mealPlans[day]).map(([mealType, meal], index) => (
+                              <Card key={index} className="border-none shadow-sm hover:shadow-md transition-shadow">
+                                <CardHeader className="pb-2">
+                                  <CardTitle className="text-lg font-semibold dark:text-white">
+                                    {mealType.charAt(0).toUpperCase() + mealType.slice(1)}
+                                  </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  <div className="space-y-4">
+                                    <div>
+                                      <h4 className="text-xl font-medium dark:text-white">{meal.name}</h4>
+                                      <p className="text-gray-600 dark:text-gray-300">{meal.amount}</p>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-4">
+                                      {[
+                                        { label: 'Calories', value: `${meal.calories} kcal` },
+                                        { label: 'Protein', value: `${meal.macronutrients.protein}g` },
+                                        { label: 'Carbs', value: `${meal.macronutrients.carbs}g` },
+                                        { label: 'Fat', value: `${meal.macronutrients.fat}g` }
+                                      ].map((item, i) => (
+                                        <div key={i} className="text-center p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                          <p className="text-xs text-gray-600 dark:text-gray-400">{item.label}</p>
+                                          <p className="text-sm font-semibold dark:text-white">{item.value}</p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        </AccordionContent>
+                      </AccordionItem>
+                    )
+                  ))}
+                </Accordion>
+              </div>
+            )}
+          </div>
+        </main>
       </div>
-    </main>
-    </div>
     </Layout>
   );
 };
-
 const MealPlansPage1: React.FC = () => {
   return (
     <DarkModeProvider>
@@ -311,6 +358,4 @@ const MealPlansPage1: React.FC = () => {
     </DarkModeProvider>
   )
 }
-
-
 export default MealPlansPage1;
