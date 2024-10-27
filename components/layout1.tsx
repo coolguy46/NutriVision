@@ -1,6 +1,6 @@
 "use client"
 import React, { useState, useEffect, ReactNode } from 'react';
-import HeaderMenu from './HeaderMenu';
+import HeaderMenu from '@/components/HeaderMenu';
 
 type LayoutProps = {
   children: ReactNode;
