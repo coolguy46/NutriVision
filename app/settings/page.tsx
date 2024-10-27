@@ -4,27 +4,31 @@ import { useAuth } from '@/app/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { updateEmail, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
 import { auth, googleProvider } from '@/lib/firebaseConfig';
-import HeaderMenu from '@/components/HeaderMenu';
 import { signInWithPopup, linkWithPopup } from 'firebase/auth';
-import '@/app/globals.css';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Settings, Mail, Lock } from 'lucide-react';
+import { FcGoogle } from "react-icons/fc"
 import Layout from '@/components/layout1';
+import '@/app/globals.css'
 
-const SettingsPage: React.FC = () => {
+const SettingsPage = () => {
   const { user, initialized } = useAuth();
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [newPassword, setNewPassword] = useState<string>('');
-  const [oldPassword, setOldPassword] = useState<string>('');
-  const [message, setMessage] = useState<string>('');
-  const [error, setError] = useState<string>('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [oldPassword, setOldPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const router = useRouter();
-  useEffect(() => {
-    if (!initialized) return; // Wait for initialization
 
+  useEffect(() => {
+    if (!initialized) return;
     if (!user) {
       router.push('/signin');
     }
-    }, [user, initialized, router]);
+  }, [user, initialized, router]);
 
   useEffect(() => {
     if (user?.providerData.some(provider => provider.providerId === 'google.com')) {
@@ -45,9 +49,7 @@ const SettingsPage: React.FC = () => {
       if (!user?.providerData.some(provider => provider.providerId === 'google.com')) {
         await updateEmail(auth.currentUser!, email);
       }
-
       await updatePassword(auth.currentUser!, password);
-
       setMessage('Email and password have been added successfully.');
     } catch (err) {
       setError('Failed to update email or password. ' + (err as Error).message);
@@ -79,7 +81,6 @@ const SettingsPage: React.FC = () => {
       const userCredential = EmailAuthProvider.credential(user!.email!, oldPassword);
       await reauthenticateWithCredential(auth.currentUser!, userCredential);
       await updatePassword(auth.currentUser!, newPassword);
-
       setMessage('Password updated successfully.');
     } catch (err) {
       setError('Failed to update password. ' + (err as Error).message);
@@ -88,95 +89,150 @@ const SettingsPage: React.FC = () => {
 
   return (
     <Layout>
-    <main className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-      
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-4">Settings</h1>
-
-        {user?.providerData.some(provider => provider.providerId === 'google.com') && !user?.providerData.some(provider => provider.providerId === 'password') && (
-          <>
-            <h2 className="text-xl mb-4">Add Email & Password Sign-In</h2>
-            <div className="mb-4">
-              <label htmlFor="email" className="block text-gray-700">Email:</label>
-              <input
-                type="email"
-                id="email"
-                value={email}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                readOnly
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="password" className="block text-gray-700">Password:</label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required
-              />
-            </div>
-            <button
-              onClick={handleAddEmailPassword}
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 transition"
-            >
-              Add Email & Password
-            </button>
-          </>
-        )}
-
-        {user?.providerData.some(provider => provider.providerId === 'password') && (
-          <>
-            <h2 className="text-xl mb-4">Change Password</h2>
-            <div className="mb-4">
-              <label htmlFor="oldPassword" className="block text-gray-700">Old Password:</label>
-              <input
-                type="password"
-                id="oldPassword"
-                value={oldPassword}
-                onChange={(e) => setOldPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="newPassword" className="block text-gray-700">New Password:</label>
-              <input
-                type="password"
-                id="newPassword"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required
-              />
-            </div>
-            <button
-              onClick={handleChangePassword}
-              className="w-full bg-red-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-red-600 transition"
-            >
-              Change Password
-            </button>
-          </>
-        )}
-
-        {!(user?.providerData.some(provider => provider.providerId === 'google.com') && user?.providerData.some(provider => provider.providerId === 'password')) && (
-          <div className="mt-6">
-            <h2 className="text-xl mb-4">Link Google Account</h2>
-            <button
-              onClick={handleLinkGoogleAccount}
-              className="w-full bg-green-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-green-600 transition"
-            >
-              Link Google Account
-            </button>
+      <main className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-3xl mx-auto space-y-6">
+          <div className="flex items-center space-x-4">
+            <Settings className="h-8 w-8 text-gray-700" />
+            <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
           </div>
-        )}
 
-        {message && <p className="text-green-500 mt-4 text-center">{message}</p>}
-        {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
-      </div>
-    </main>
+          <Tabs defaultValue="authentication" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="authentication" className="flex items-center gap-2">
+                <Lock className="h-4 w-4" />
+                Authentication
+              </TabsTrigger>
+              <TabsTrigger value="linked-accounts" className="flex items-center gap-2">
+                <FcGoogle className="h-4 w-4" />
+                Linked Accounts
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="authentication">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Lock className="h-5 w-5" />
+                    Authentication Settings
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {user?.providerData.some(provider => provider.providerId === 'google.com') && 
+                   !user?.providerData.some(provider => provider.providerId === 'password') && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Add Email & Password Sign-In</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Email Address
+                          </label>
+                          <input
+                            type="email"
+                            value={email}
+                            readOnly
+                            className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Password
+                          </label>
+                          <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500"
+                          />
+                        </div>
+                        <button
+                          onClick={handleAddEmailPassword}
+                          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-150 ease-in-out flex items-center justify-center gap-2"
+                        >
+                          <Mail className="h-4 w-4" />
+                          Add Email and Password
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {user?.providerData.some(provider => provider.providerId === 'password') && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Change Password</h3>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Current Password
+                          </label>
+                          <input
+                            type="password"
+                            value={oldPassword}
+                            onChange={(e) => setOldPassword(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            New Password
+                          </label>
+                          <input
+                            type="password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-indigo-500"
+                          />
+                        </div>
+                        <button
+                          onClick={handleChangePassword}
+                          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-150 ease-in-out flex items-center justify-center gap-2"
+                        >
+                          <Lock className="h-4 w-4" />
+                          Update Password
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="linked-accounts">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FcGoogle className="h-5 w-5" />
+                    Linked Accounts
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {!(user?.providerData.some(provider => provider.providerId === 'google.com') && 
+                     user?.providerData.some(provider => provider.providerId === 'password')) && (
+                    <div className="space-y-4">
+                      <p className="text-sm text-gray-600">
+                        Link your Google account to enable additional sign in options and enhanced security.
+                      </p>
+                      <button
+                        onClick={handleLinkGoogleAccount}
+                        className="w-full bg-white text-gray-700 border border-gray-300 py-2 px-4 rounded-md hover:bg-gray-50 transition duration-150 ease-in-out flex items-center justify-center gap-2"
+                      >
+                        <FcGoogle className="h-4 w-4" />
+                        Link Google Account
+                      </button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+
+          {(message || error) && (
+            <Alert variant={message ? "default" : "destructive"}>
+              <AlertDescription>
+                {message || error}
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+      </main>
     </Layout>
   );
 };
