@@ -1,5 +1,7 @@
-"use client"
-import { AnalysisProvider } from '@/context/AnalysisContext'; // Adjust the path as necessary
+import { AnalysisProvider } from '@/context/AnalysisContext';
+import Layout from '@/components/layout1';
+
+// Remove "use client" as this should be a server component
 
 export default function RootLayout({
   children,
@@ -9,9 +11,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AnalysisProvider>
-          {children}
-        </AnalysisProvider>
+        <Layout>
+          <AnalysisProvider>
+            {children}
+          </AnalysisProvider>
+        </Layout>
       </body>
     </html>
   );
