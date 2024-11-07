@@ -13,7 +13,7 @@ import HeaderMenu from '@/components/HeaderMenu';
 import { db } from '@/lib/firebaseConfig';
 import DailyProgress from '@/components/DailyProgress';
 import '@/app/globals.css';
-import { Apple, ArrowLeft, Clock, Moon, Sun, TrendingUp } from 'lucide-react';
+import { Apple, ArrowLeft, Clock, Moon, Pizza, Plus, Sun, TrendingUp } from 'lucide-react';
 import Darkmodebutton from '@/components/darkmodebutton'
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -28,6 +28,7 @@ import { Upload } from 'lucide-react';
 import NutriVisionLoading from '@/components/NutriVisionLoading';
 import { DarkModeProvider, useDarkMode } from '@/components/DarkModeContext';
 import Layout from '@/components/layout1';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
 
@@ -463,156 +464,166 @@ const HomeContent = () => {
     <Layout>
       <div className={`min-h-screen ${isDarkMode ? 'dark' : ''}`}>
         <div className="dark:bg-gray-900 dark:text-white min-h-screen">
-          <main className="pt-16 min-h-screen bg-gradient-to-b from-blue-100 to-white dark:from-gray-800 dark:to-gray-900">
-            {/* Header Section */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+          <main className="pt-4 sm:pt-16 min-h-screen bg-gradient-to-b from-blue-100 to-white dark:from-gray-800 dark:to-gray-900">
+            <div className="max-w-7xl mx-auto px-4">
+              {/* Mobile Header */}
+              <div className="flex flex-col space-y-4 mb-6 sm:mb-8">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                  Welcome Back
+                </h1>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Track your nutrition journey
+                </p>
               </div>
 
-              {/* Quick Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              {/* Quick Stats - Mobile Optimized */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-6 mb-6">
                 <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center">
-                      <TrendingUp className="w-8 h-8 mr-3" />
+                  <CardContent className="p-4">
+                    <div className="flex flex-col space-y-2">
+                      <TrendingUp className="w-6 h-6" />
                       <div>
-                        <p className="text-sm opacity-80">Daily Progress</p>
-                        <h3 className="text-2xl font-bold">{total.calories.toFixed(0)} kcal</h3>
+                        <p className="text-xs opacity-80">Calories Today</p>
+                        <h3 className="text-xl font-bold">{total.calories.toFixed(0)}</h3>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
                 <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center">
-                      <Apple className="w-8 h-8 mr-3" />
+                  <CardContent className="p-4">
+                    <div className="flex flex-col space-y-2">
+                      <Pizza className="w-6 h-6" />
                       <div>
-                        <p className="text-sm opacity-80">Meals Tracked</p>
-                        <h3 className="text-2xl font-bold">{pastAnalyses.length}</h3>
+                        <p className="text-xs opacity-80">Meals</p>
+                        <h3 className="text-xl font-bold">{pastAnalyses.length}</h3>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center">
-                      <Clock className="w-8 h-8 mr-3" />
+                <Card className="col-span-2 sm:col-span-1 bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+                  <CardContent className="p-4">
+                    <div className="flex flex-col space-y-2">
+                      <Clock className="w-6 h-6" />
                       <div>
-                        <p className="text-sm opacity-80">Time Until Reset (Feature Not Implemented)</p>
-                        <h3 className="text-2xl font-bold">24:00:00</h3>
+                        <p className="text-xs opacity-80">Reset In</p>
+                        <h3 className="text-xl font-bold">24:00:00</h3>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Main Content Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Daily Progress Section */}
-                <Card className="shadow-lg dark:bg-gray-800">
-                  <CardHeader className="space-y-1">
-                    <CardTitle className="text-2xl">Nutrition Overview</CardTitle>
-                    <CardDescription>Your daily nutritional breakdown</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <DailyProgress />
-                  </CardContent>
-                </Card>
+              {/* Mobile Tabs for Content Sections */}
+              <Tabs defaultValue="overview" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="meals">Food Log</TabsTrigger>
+                </TabsList>
 
-                {/* Recommended Meals Section */}
-                <Card className="shadow-lg dark:bg-gray-800">
-                  <CardHeader className="space-y-1">
-                    <CardTitle className="text-2xl">Todays Meal Plan</CardTitle>
-                    <CardDescription>Recommended meals for today</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {Object.entries(recommendedMeals).map(([mealType, meal]) => (
-                        <div key={mealType} className="p-4 rounded-lg bg-gray-50 dark:bg-gray-700">
-                          <h3 className="text-lg font-semibold capitalize mb-2">{mealType}</h3>
-                          {meal ? (
-                            <div className="space-y-2">
-                              <p className="font-medium">{meal.name}</p>
-                              <div className="grid grid-cols-2 gap-2 text-sm">
-                                <p>Calories: {meal.calories} kcal</p>
-                                <p>Amount: {meal.amount}</p>
-                                <p>Protein: {meal.macronutrients.protein}g</p>
-                                <p>Carbs: {meal.macronutrients.carbs}g</p>
-                              </div>
+                <TabsContent value="overview">
+                  <div className="space-y-6">
+                    {/* Nutrition Overview Card */}
+                    <Card className="shadow-sm dark:bg-gray-800">
+                      <CardHeader className="space-y-1 p-4">
+                        <CardTitle className="text-xl">Nutrition Overview</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4">
+                        <DailyProgress />
+                      </CardContent>
+                    </Card>
+
+                    {/* Meal Plan Card */}
+                    <Card className="shadow-sm dark:bg-gray-800">
+                      <CardHeader className="space-y-1 p-4">
+                        <CardTitle className="text-xl">Today's Meals</CardTitle>
+                      </CardHeader>
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          {Object.entries(recommendedMeals).map(([mealType, meal]) => (
+                            <div key={mealType} className="p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
+                              <h3 className="text-sm font-semibold capitalize mb-2">{mealType}</h3>
+                              {meal ? (
+                                <div className="space-y-1">
+                                  <p className="text-sm font-medium">{meal.name}</p>
+                                  <div className="grid grid-cols-2 gap-1 text-xs text-gray-600 dark:text-gray-300">
+                                    <p>{meal.calories} kcal</p>
+                                    <p>{meal.amount}</p>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="text-xs text-gray-500">No meal planned</p>
+                              )}
                             </div>
-                          ) : (
-                            <p className="text-gray-500">No meal recommended</p>
-                          )}
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
 
-                {/* Food Log Section - Full Width */}
-                <Card className="shadow-lg dark:bg-gray-800 lg:col-span-2">
-                  <CardHeader className="space-y-1">
-                    <CardTitle className="text-2xl">Food Log</CardTitle>
-                    <CardDescription>Recent meal tracking history</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ScrollArea className="h-[400px]">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {pastAnalyses.map((analysis) => (
-                          <div key={analysis.id} 
-                               className="group relative rounded-lg overflow-hidden bg-white dark:bg-gray-700 shadow-sm hover:shadow-md transition-all">
-                            <div className="aspect-w-16 aspect-h-9">
+                <TabsContent value="meals">
+                  <Card className="shadow-sm dark:bg-gray-800">
+                    <CardHeader className="space-y-1 p-4">
+                      <CardTitle className="text-xl">Recent Meals</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4">
+                      <ScrollArea className="h-[calc(100vh-20rem)]">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {pastAnalyses.map((analysis) => (
+                            <div key={analysis.id} 
+                                className="flex items-center space-x-4 p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
                               <img 
                                 src={analysis.imageUrl} 
                                 alt={analysis.name} 
-                                className="object-cover w-full h-full"
+                                className="w-16 h-16 rounded-lg object-cover"
                               />
-                            </div>
-                            <div className="p-4">
-                              <h3 className="font-semibold truncate">{analysis.name}</h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-300">
-                                {analysis.calories} kcal
-                              </p>
-                              <div className="mt-3 flex space-x-2">
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  onClick={() => handleViewAnalysis(analysis)}
-                                  className="flex-1"
-                                >
-                                  View
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="destructive" 
-                                  onClick={() => removeAnalysis(analysis)}
-                                  className="flex-1"
-                                >
-                                  Remove
-                                </Button>
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-medium text-sm truncate">{analysis.name}</h3>
+                                <p className="text-xs text-gray-600 dark:text-gray-300">
+                                  {analysis.calories} kcal
+                                </p>
+                                <div className="mt-2 flex space-x-2">
+                                  <Button 
+                                    size="sm" 
+                                    variant="outline" 
+                                    onClick={() => handleViewAnalysis(analysis)}
+                                    className="text-xs py-1 h-7"
+                                  >
+                                    View
+                                  </Button>
+                                  <Button 
+                                    size="sm" 
+                                    variant="destructive" 
+                                    onClick={() => removeAnalysis(analysis)}
+                                    className="text-xs py-1 h-7"
+                                  >
+                                    Remove
+                                  </Button>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
-              </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
             </div>
           </main>
 
-          {/* Upload Button and Dialog */}
+          {/* Floating Action Button - Mobile Optimized */}
           <button
             onClick={openCamera}
-            className="fixed bottom-6 right-6 p-4 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 transition-colors duration-200 dark:bg-blue-600 dark:hover:bg-blue-700"
+            className="fixed bottom-6 right-6 p-3 rounded-full shadow-lg bg-blue-500 hover:bg-blue-600 transition-colors duration-200 dark:bg-blue-600 dark:hover:bg-blue-700 flex items-center justify-center"
+            aria-label="Add meal"
           >
-            <Upload className="w-6 h-6 text-white" />
+            <Plus className="w-6 h-6 text-white" />
           </button>
 
+          {/* File Input and Dialog */}
           <input
             type="file"
             ref={fileInputRef}
@@ -622,22 +633,22 @@ const HomeContent = () => {
           />
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent className="sm:max-w-[425px] dark:bg-gray-800">
-              <div className="relative w-full h-64">
+            <DialogContent className="sm:max-w-[425px] p-0 dark:bg-gray-800">
+              <div className="relative w-full h-48 sm:h-64">
                 <img 
                   src={selectedAnalysis?.imageUrl || tempImageUrl || '/placeholder-image.jpg'} 
                   alt={selectedAnalysis?.name || 'Food analysis'} 
-                  className="w-full h-full object-cover rounded-t-lg"
+                  className="w-full h-full object-cover"
                 />
                 <Button 
                   className="absolute top-4 left-4 bg-white/80 hover:bg-white/90 text-black rounded-full p-2"
                   onClick={() => setIsDialogOpen(false)}
                 >
-                  <ArrowLeft className="w-6 h-6" />
+                  <ArrowLeft className="w-5 h-5" />
                 </Button>
               </div>
-              <div className="p-6">
-                <h2 className="text-2xl font-bold mb-4">
+              <div className="p-4">
+                <h2 className="text-xl font-bold mb-4">
                   {selectedAnalysis?.name || 'Analysis Results'}
                 </h2>
                 {currentAnalysis && (
