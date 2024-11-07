@@ -19,13 +19,14 @@ import { Check, Clock, Search, UserMinus, UserPlus, Users } from 'lucide-react';
 const AddFriendsPage: React.FC = () => {
   const { user } = useAuth();
   const [allUsers, setAllUsers] = useState<any[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
+  const [searchedUser, setSearchedUser] = useState<any | null>(null);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [receivedRequests, setReceivedRequests] = useState<any[]>([]);
-  const [friendsList, setFriendsList] = useState<any[]>([]); // State for friends list
+  const [friendsList, setFriendsList] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [error, setError] = useState<string | null>(null); // State for error messages
+  const [error, setError] = useState<string | null>(null);
   const { isDarkMode, toggleDarkMode } = useDarkMode();
+
   if (user){
     const userDocRef = doc(db, 'users', user.uid);
     updateDoc(userDocRef, { email : user.email })
@@ -35,56 +36,19 @@ const AddFriendsPage: React.FC = () => {
     const fetchData = async () => {
       if (user) {
         try {
-          // Fetch all users
+          // Fetch all users but keep them private
           const usersQuery = query(collection(db, 'users'));
           const usersSnapshot = await getDocs(usersQuery);
 
           const users = usersSnapshot.docs.map(doc => ({
             id: doc.id,
-            uid: doc.id, // Ensure uid is always present
+            uid: doc.id,
             ...doc.data(),
           }));
 
-          // Filter users locally
-          const filteredUsers = users.filter(u => u.uid !== user.uid);
+          setAllUsers(users.filter(u => u.uid !== user.uid));
 
-          // Fetch the latest profile pictures from Firebase Storage
-          const usersWithProfilePictures = await Promise.all(
-            filteredUsers.map(async user => {
-              try {
-                const userFolderRef = ref(storage, `profile_pictures/${user.uid}`);
-                const fileList = await listAll(userFolderRef);
-
-                if (fileList.items.length > 0) {
-                  // Sort files by creation time to find the latest uploaded picture
-                  const sortedFiles = await Promise.all(
-                    fileList.items.map(async fileRef => {
-                      const metadata = await getMetadata(fileRef); // Fetch metadata using getMetadata function
-                      return {
-                        ref: fileRef,
-                        timeCreated: new Date(metadata.timeCreated)
-                      };
-                    })
-                  );
-
-                  const latestFile = sortedFiles.sort((a, b) => b.timeCreated.getTime() - a.timeCreated.getTime())[0];
-                  const profilePicURL = await getDownloadURL(latestFile.ref);
-
-                  return { ...user, profilePicture: profilePicURL };
-                } else {
-                  return { ...user, profilePicture: null }; // No profile picture found
-                }
-              } catch (error) {
-                console.error(`Error fetching profile picture for user ${user.uid}:`, error);
-                return { ...user, profilePicture: null }; // If no profile picture found or error occurs
-              }
-            })
-          );
-
-          setAllUsers(usersWithProfilePictures);
-          setFilteredUsers(usersWithProfilePictures);
-
-          // Fetch pending friend requests from the current user
+          // Fetch pending friend requests
           const pendingRequestsQuery = query(
             collection(db, 'friend_requests'),
             where('from', '==', user.uid),
@@ -104,26 +68,24 @@ const AddFriendsPage: React.FC = () => {
           const receivedRequests = receivedRequestsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           setReceivedRequests(receivedRequests);
 
-          // Fetch accepted friend requests (friends list)
+          // Fetch friends list
           const friendsQuery = query(
             collection(db, 'friend_requests'),
             where('status', '==', 'accepted'),
-            where('from', 'in', [user.uid]) // Your sent requests that were accepted
+            where('from', 'in', [user.uid])
           );
           const friendsSnapshot = await getDocs(friendsQuery);
 
-          // Include both sent and received accepted requests
           const friends = friendsSnapshot.docs.map(doc => {
             const data = doc.data();
             const friendId = data.from === user.uid ? data.to : data.from;
             return { friendId, ...data };
           });
 
-          // Fetch accepted requests you received
           const receivedAcceptedQuery = query(
             collection(db, 'friend_requests'),
             where('status', '==', 'accepted'),
-            where('to', '==', user.uid) // Requests you received and accepted
+            where('to', '==', user.uid)
           );
           const receivedAcceptedSnapshot = await getDocs(receivedAcceptedQuery);
           const receivedAcceptedFriends = receivedAcceptedSnapshot.docs.map(doc => {
@@ -132,12 +94,8 @@ const AddFriendsPage: React.FC = () => {
             return { friendId, ...data };
           });
 
-          // Combine both lists
           const allFriends = [...friends, ...receivedAcceptedFriends];
-
-          // Map friends to user data
-          const friendsData = allFriends.map(f => usersWithProfilePictures.find(u => u.uid === f.friendId));
-
+          const friendsData = allFriends.map(f => users.find(u => u.uid === f.friendId)).filter(Boolean);
           setFriendsList(friendsData);
 
         } catch (error) {
@@ -149,27 +107,64 @@ const AddFriendsPage: React.FC = () => {
     fetchData();
   }, [user]);
 
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    setSearchedUser(null); // Reset searched user when input changes
+    setError(null); // Reset error when input changes
+  };
+
+  const searchExactEmail = () => {
+    if (!searchQuery) {
+      setError("Please enter an email address");
+      return;
+    }
+
+    const foundUser = allUsers.find(u => u.email?.toLowerCase() === searchQuery.toLowerCase());
+    
+    if (!foundUser) {
+      setError("No user found with this email address");
+      return;
+    }
+
+    // Check if already friends
+    if (friendsList.some(friend => friend.uid === foundUser.uid)) {
+      setError("You're already friends with this user");
+      return;
+    }
+
+    // Check if request already pending
+    if (pendingRequests.some(req => req.to === foundUser.uid)) {
+      setError("You already have a pending request to this user");
+      return;
+    }
+
+    setSearchedUser(foundUser);
+    setError(null);
+  };
+
   const sendFriendRequest = async (recipientId: string) => {
     if (user) {
       try {
-        // Check if the user is already a friend
-        const isAlreadyFriend = friendsList.some(friend => friend.uid === recipientId);
-        if (isAlreadyFriend) {
-          setError("You can't send a friend request to someone you're already friends with.");
-          return;
-        }
-
         await addDoc(collection(db, 'friend_requests'), {
           from: user.uid,
           to: recipientId,
           status: 'pending'
         });
-        // Refresh pending requests after sending a new request
-        const updatedPendingRequests = await getDocs(query(collection(db, 'friend_requests'), where('from', '==', user.uid), where('status', '==', 'pending')));
+        
+        const updatedPendingRequests = await getDocs(query(
+          collection(db, 'friend_requests'), 
+          where('from', '==', user.uid), 
+          where('status', '==', 'pending')
+        ));
+        
         setPendingRequests(updatedPendingRequests.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        setError(null); // Clear any previous error
+        setSearchedUser(null);
+        setSearchQuery('');
+        setError("Friend request sent successfully!");
       } catch (error) {
         console.error('Error sending friend request:', error);
+        setError("Failed to send friend request. Please try again.");
       }
     }
   };
@@ -178,8 +173,11 @@ const AddFriendsPage: React.FC = () => {
     const requestDocRef = doc(db, 'friend_requests', requestId);
     try {
       await updateDoc(requestDocRef, { status: 'accepted' });
-      // Refresh received requests after accepting
-      const updatedReceivedRequests = await getDocs(query(collection(db, 'friend_requests'), where('to', '==', user?.uid), where('status', '==', 'pending')));
+      const updatedReceivedRequests = await getDocs(query(
+        collection(db, 'friend_requests'), 
+        where('to', '==', user?.uid), 
+        where('status', '==', 'pending')
+      ));
       setReceivedRequests(updatedReceivedRequests.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     } catch (error) {
       console.error('Error accepting friend request:', error);
@@ -190,23 +188,14 @@ const AddFriendsPage: React.FC = () => {
     const requestDocRef = doc(db, 'friend_requests', requestId);
     try {
       await deleteDoc(requestDocRef);
-      // Refresh pending requests after canceling
-      const updatedPendingRequests = await getDocs(query(collection(db, 'friend_requests'), where('from', '==', user?.uid), where('status', '==', 'pending')));
+      const updatedPendingRequests = await getDocs(query(
+        collection(db, 'friend_requests'), 
+        where('from', '==', user?.uid), 
+        where('status', '==', 'pending')
+      ));
       setPendingRequests(updatedPendingRequests.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     } catch (error) {
       console.error('Error canceling friend request:', error);
-    }
-  };
-
-  // Function to filter users based on the search query
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value.toLowerCase();
-    setSearchQuery(query);
-    if (query === '') {
-      setFilteredUsers(allUsers);
-    } else {
-      const filtered = allUsers.filter(user => user.email?.toLowerCase().includes(query));
-      setFilteredUsers(filtered);
     }
   };
 
@@ -247,57 +236,56 @@ const AddFriendsPage: React.FC = () => {
           <TabsContent value="search">
             <Card className="border-none shadow-lg">
               <CardHeader className="pb-4">
-                <CardTitle>Find New Friends</CardTitle>
+                <CardTitle>Find Friends by Email</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="relative mb-6">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    type="text"
-                    value={searchQuery}
-                    onChange={handleSearch}
-                    placeholder="Search by email address"
-                    className="pl-10"
-                  />
-                </div>
-
-                {error && (
-                  <Alert variant="destructive" className="mb-4">
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-
                 <div className="space-y-4">
-                  {filteredUsers.map(user => (
-                    <div key={user.id} 
-                         className="flex items-center justify-between p-4 rounded-lg bg-card hover:bg-accent/50 transition-colors">
+                  <div className="flex gap-2">
+                    <Input
+                      type="email"
+                      value={searchQuery}
+                      onChange={handleSearch}
+                      placeholder="Enter exact email address"
+                      className="flex-1"
+                    />
+                    <Button onClick={searchExactEmail}>
+                      <Search className="w-4 h-4 mr-2" />
+                      Search
+                    </Button>
+                  </div>
+
+                  {error && (
+                    <Alert variant={error.includes("successfully") ? "default" : "destructive"}>
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+
+                  {searchedUser && (
+                    <div className="flex items-center justify-between p-4 rounded-lg bg-card hover:bg-accent/50 transition-colors">
                       <div className="flex items-center space-x-4">
                         <Avatar className="h-12 w-12">
-                          <AvatarImage src={user.profilePicture || '/default-profile.png'} alt={user.email} />
-                          <AvatarFallback>{user.email?.[0]?.toUpperCase()}</AvatarFallback>
+                          <AvatarImage src={searchedUser.profilePicture || '/default-profile.png'} alt={searchedUser.email} />
+                          <AvatarFallback>{searchedUser.email?.[0]?.toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium">{user.email}</p>
-                          {pendingRequests.some(req => req.to === user.uid) && (
-                            <span className="text-sm text-muted-foreground">Request Pending</span>
-                          )}
+                          <p className="font-medium">{searchedUser.email}</p>
                         </div>
                       </div>
                       <Button 
-                        onClick={() => sendFriendRequest(user.uid)}
-                        disabled={pendingRequests.some(req => req.to === user.uid)}
+                        onClick={() => sendFriendRequest(searchedUser.uid)}
                         className="ml-4"
                       >
                         <UserPlus className="w-4 h-4 mr-2" />
                         Add Friend
                       </Button>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
+          {/* Rest of the tabs remain the same */}
           <TabsContent value="pending">
             <Card className="border-none shadow-lg">
               <CardHeader>
@@ -364,9 +352,8 @@ const AddFriendsPage: React.FC = () => {
                           <Avatar>
                             <AvatarImage 
                               src={allUsers.find(user => user.id === request.from)?.profilePicture || '/default-profile.png'}
-                              alt={allUsers.find(user => user.id === request.from)?.email}
-                            />
-                            <AvatarFallback>
+                            ></AvatarImage>
+                              <AvatarFallback>
                               {allUsers.find(user => user.id === request.from)?.email?.[0]?.toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
@@ -437,3 +424,4 @@ const AddFriendsPageWrapper: React.FC = () => {
 };
 
 export default AddFriendsPageWrapper;
+                                
