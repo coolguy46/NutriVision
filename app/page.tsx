@@ -537,7 +537,7 @@ const HomeContent = () => {
                     {/* Meal Plan Card */}
                     <Card className="shadow-sm dark:bg-gray-800">
                       <CardHeader className="space-y-1 p-4">
-                        <CardTitle className="text-xl">Today's Meals</CardTitle>
+                        <CardTitle className="text-xl">Todays Meals</CardTitle>
                       </CardHeader>
                       <CardContent className="p-4">
                         <div className="space-y-3">
