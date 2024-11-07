@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { deleteObject, getDownloadURL, getStorage, ref } from 'firebase/storage';
 import { FoodData } from '@/components/types';
+import { cn } from '@/lib/utils';
 
 interface NutrientProgressProps {
     title: string;
@@ -18,6 +19,8 @@ interface NutrientProgressProps {
     goal: number;
     icon: LucideIcon;
     color: string;
+    size?: 'sm' | 'md' | 'lg';
+    showRemaining?: boolean;
 }
 
 interface Recommendations {
@@ -26,15 +29,30 @@ interface Recommendations {
     carbs: number;
     fat: number;
 }
+interface DailyProgressProps {
+    layout?: 'grid' | 'list';
+    cardSize?: 'sm' | 'md' | 'lg';
+    showStreak?: boolean;
+    showRemaining?: boolean;
+    theme?: 'light' | 'dark' | 'custom';
+    customColors?: {
+        calories?: string;
+        protein?: string;
+        carbs?: string;
+        fat?: string;
+        background?: string;
+        text?: string;
+    };
+    className?: string;
+}
 
 interface CircularProgressProps {
     value: number;
-    size?: number;
+    size?: 'sm' | 'md' | 'lg';
     strokeWidth?: number;
     icon: LucideIcon;
     color: string;
 }
-
 interface ExtendedFoodData extends FoodData {
     id?: string;
     imageUrl?: string;
@@ -48,47 +66,136 @@ interface PastAnalysis extends ExtendedFoodData {
     timestamp: number;
 }
 
-const CircularProgress: React.FC<CircularProgressProps> = ({ value, size = 120, strokeWidth = 12, icon: Icon, color }) => {
-    const radius = (size - strokeWidth) / 2;
+const sizeMap = {
+    sm: {
+        circle: 80,
+        stroke: 8,
+        icon: 'w-1/3 h-1/3',
+        text: 'text-xs',
+        title: 'text-sm',
+    },
+    md: {
+        circle: 120,
+        stroke: 12,
+        icon: 'w-1/3 h-1/3',
+        text: 'text-sm',
+        title: 'text-lg',
+    },
+    lg: {
+        circle: 150,
+        stroke: 14,
+        icon: 'w-1/2 h-1/2',
+        text: 'text-base',
+        title: 'text-xl',
+    },
+};
+
+const CircularProgress: React.FC<CircularProgressProps> = ({ 
+    value, 
+    size = 'md', 
+    strokeWidth, 
+    icon: Icon, 
+    color 
+}) => {
+    const { circle, stroke, icon, text } = sizeMap[size];
+    const actualStrokeWidth = strokeWidth || stroke;
+    const radius = (circle - actualStrokeWidth) / 2;
     const circumference = radius * 2 * Math.PI;
     const strokeDashoffset = circumference - (value / 100) * circumference;
 
     return (
-        <div className="relative" style={{ width: size, height: size }}>
+        <div className="relative" style={{ width: circle, height: circle }}>
             <svg className="w-full h-full -rotate-90">
                 <circle
                     className="opacity-20"
-                    strokeWidth={strokeWidth}
+                    strokeWidth={actualStrokeWidth}
                     stroke={color}
                     fill="transparent"
                     r={radius}
-                    cx={size / 2}
-                    cy={size / 2}
+                    cx={circle / 2}
+                    cy={circle / 2}
                 />
                 <circle
-                    strokeWidth={strokeWidth}
+                    strokeWidth={actualStrokeWidth}
                     strokeDasharray={circumference}
                     strokeDashoffset={strokeDashoffset}
                     strokeLinecap="round"
                     stroke={color}
                     fill="transparent"
                     r={radius}
-                    cx={size / 2}
-                    cy={size / 2}
+                    cx={circle / 2}
+                    cy={circle / 2}
                     className="transition-all duration-500 ease-out"
                 />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-                <Icon className="w-1/3 h-1/3" style={{ color }} />
+                <Icon className={cn(icon)} style={{ color }} />
             </div>
-            <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 px-2 py-1 rounded-full text-xs font-medium" style={{ color }}>
+            <div 
+                className={cn(
+                    "absolute -bottom-2 left-1/2 transform -translate-x-1/2",
+                    "bg-white dark:bg-gray-800 px-2 py-1 rounded-full font-medium",
+                    text
+                )} 
+                style={{ color }}
+            >
                 {Math.round(value)}%
             </div>
         </div>
     );
 };
 
-const DailyProgress: React.FC = () => {
+const NutrientProgress: React.FC<NutrientProgressProps> = ({ 
+    title, 
+    current, 
+    goal, 
+    icon, 
+    color,
+    size = 'md',
+    showRemaining = true,
+}) => {
+    const progress = Math.min((current / goal) * 100, 100);
+    const remaining = Math.max(goal - current, 0);
+    const { title: titleSize } = sizeMap[size];
+
+    return (
+        <Card className="p-4 shadow-lg hover:shadow-xl transition-shadow duration-200">
+            <CardContent className="p-0">
+                <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                    <CircularProgress 
+                        value={progress} 
+                        icon={icon} 
+                        color={color}
+                        size={size}
+                    />
+                    <div className="flex-1 text-center sm:text-left">
+                        <h3 className={cn("font-semibold mb-1 dark:text-white", titleSize)}>
+                            {title}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {current.toFixed(1)}g of {goal}g
+                        </p>
+                        {showRemaining && (
+                            <p className="text-xs text-gray-500">
+                                {remaining.toFixed(1)}g remaining
+                            </p>
+                        )}
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
+const DailyProgress: React.FC<DailyProgressProps> = ({
+    layout = 'grid',
+    cardSize = 'md',
+    showStreak = true,
+    showRemaining = true,
+    theme = 'light',
+    customColors = {},
+    className
+}) => {
     const { user, saveTotalToFirestore } = useAuth();
     const [recommendations, setRecommendations] = useState<Recommendations | null>(null);
     const [total, setTotal] = useState({
@@ -102,6 +209,15 @@ const DailyProgress: React.FC = () => {
     const [isWeightDialogOpen, setIsWeightDialogOpen] = useState(false);
     const [newWeight, setNewWeight] = useState('');
     const [pastAnalyses, setPastAnalyses] = useState<PastAnalysis[]>([]);
+
+    const colors = {
+        calories: customColors.calories || '#FF5733',
+        protein: customColors.protein || '#33A1FD',
+        carbs: customColors.carbs || '#33FF57',
+        fat: customColors.fat || '#FDA433',
+        background: customColors.background || (theme === 'dark' ? '#1F2937' : '#FFFFFF'),
+        text: customColors.text || (theme === 'dark' ? '#FFFFFF' : '#1F2937'),
+    };
 
     const fetchPastAnalyses = async () => {
         if (!user) return;
@@ -154,14 +270,13 @@ const DailyProgress: React.FC = () => {
                         const hoursDiff = (now.getTime() - lastResetTimestamp.getTime()) / (1000 * 3600);
                         
                         if (hoursDiff >= 24) {
-                            // First update the total in state and Firestore
+                            // Reset logic
                             const newTotal = { calories: 0, fat: 0, carbs: 0, protein: 0 };
                             setTotal(newTotal);
                             await saveTotalToFirestore(newTotal);
                             
                             const newStreak = data.goalsCompleted ? (data.streak || 0) + 1 : 0;
                             
-                            // Then update other fields
                             await updateDoc(userDocRef, {
                                 lastResetTimestamp: serverTimestamp(),
                                 goalsCompleted: false,
@@ -240,14 +355,6 @@ const DailyProgress: React.FC = () => {
         }
     }, [total, recommendations, goalsCompleted, user]);
 
-    const calculateProgress = (current: number, goal: number) => {
-        return Math.min((current / goal) * 100, 100);
-    };
-
-    const calculateRemaining = (current: number, goal: number) => {
-        return Math.max(goal - current, 0);
-    };
-
     const handleWeightSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!user || !newWeight) return;
@@ -261,88 +368,88 @@ const DailyProgress: React.FC = () => {
         setIsWeightDialogOpen(false);
         setNewWeight('');
     };
-
-    const NutrientProgress: React.FC<NutrientProgressProps> = ({ title, current, goal, icon, color }) => {
-        const progress = calculateProgress(current, goal);
-        const remaining = calculateRemaining(current, goal);
-
-        return (
-            <Card className="p-4 shadow-lg hover:shadow-xl transition-shadow duration-200">
-                <CardContent className="p-0">
-                    <div className="flex items-center space-x-4">
-                        <CircularProgress value={progress} icon={icon} color={color} />
-                        <div className="flex-1">
-                            <h3 className="text-lg font-semibold mb-1 dark:text-white">{title}</h3>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                {current.toFixed(1)}g of {goal}g
-                            </p>
-                            <p className="text-xs text-gray-500">
-                                {remaining.toFixed(1)}g remaining
-                            </p>
-                        </div>
+    return (
+        <>
+            <Card 
+                className={cn(
+                    "w-full p-4 sm:p-6 shadow-xl",
+                    layout === 'list' ? 'max-w-xl mx-auto' : '',
+                    className
+                )}
+                style={{
+                    backgroundColor: colors.background,
+                    color: colors.text
+                }}
+            >
+                <CardHeader className="px-0 pt-0">
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                        <CardTitle className="text-xl sm:text-2xl font-bold">
+                            Daily Progress
+                        </CardTitle>
+                        {showStreak && (
+                            <div className="flex items-center space-x-2">
+                                <Trophy className="w-5 h-5 text-yellow-500" />
+                                <span className="text-lg font-semibold">
+                                    {streak} Day Streak
+                                </span>
+                            </div>
+                        )}
                     </div>
+                </CardHeader>
+
+                <CardContent className="px-0 pb-0">
+                    {recommendations ? (
+                        <div className={cn(
+                            "grid gap-4 sm:gap-6",
+                            layout === 'grid' ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'
+                        )}>
+                            <NutrientProgress
+                                title="Calories"
+                                current={total.calories}
+                                goal={recommendations.calories}
+                                icon={Flame}
+                                color={colors.calories}
+                                size={cardSize}
+                                showRemaining={showRemaining}
+                            />
+                            <NutrientProgress
+                                title="Protein"
+                                current={total.protein}
+                                goal={recommendations.protein}
+                                icon={Drumstick}
+                                color={colors.protein}
+                                size={cardSize}
+                                showRemaining={showRemaining}
+                            />
+                            <NutrientProgress
+                                title="Carbs"
+                                current={total.carbs}
+                                goal={recommendations.carbs}
+                                icon={Cookie}
+                                color={colors.carbs}
+                                size={cardSize}
+                                showRemaining={showRemaining}
+                            />
+                            <NutrientProgress
+                                title="Fats"
+                                current={total.fat}
+                                goal={recommendations.fat}
+                                icon={Cake}
+                                color={colors.fat}
+                                size={cardSize}
+                                showRemaining={showRemaining}
+                            />
+                        </div>
+                    ) : (
+                        <div className="flex justify-center items-center h-48">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
-        );
-    };
 
-    return (
-        <Card className="w-full p-6 shadow-xl">
-            <CardHeader className="px-0 pt-0">
-                <div className="flex justify-between items-center mb-6">
-                    <CardTitle className="text-2xl font-bold dark:text-white">
-                        Daily Progress
-                    </CardTitle>
-                    <div className="flex items-center space-x-2">
-                        <Trophy className="w-5 h-5 text-yellow-500" />
-                        <span className="text-lg font-semibold text-gray-700 dark:text-gray-300">
-                            {streak} Day Streak
-                        </span>
-                    </div>
-                </div>
-            </CardHeader>
-
-            <CardContent className="px-0 pb-0">
-                {recommendations ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <NutrientProgress
-                            title="Calories"
-                            current={total.calories}
-                            goal={recommendations.calories}
-                            icon={Flame}
-                            color="#FF5733"
-                        />
-                        <NutrientProgress
-                            title="Protein"
-                            current={total.protein}
-                            goal={recommendations.protein}
-                            icon={Drumstick}
-                            color="#33A1FD"
-                        />
-                        <NutrientProgress
-                            title="Carbs"
-                            current={total.carbs}
-                            goal={recommendations.carbs}
-                            icon={Cookie}
-                            color="#33FF57"
-                        />
-                        <NutrientProgress
-                            title="Fats"
-                            current={total.fat}
-                            goal={recommendations.fat}
-                            icon={Cake}
-                            color="#FDA433"
-                        />
-                    </div>
-                ) : (
-                    <div className="flex justify-center items-center h-48">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-                    </div>
-                )}
-            </CardContent>
-
-    
-        </Card>
+            
+        </>
     );
 };
 
